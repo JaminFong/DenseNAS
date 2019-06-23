@@ -1,9 +1,6 @@
 import os
-import random
 
-import numpy as np
 import torch
-import torch.utils.data
 import torchvision
 import torchvision.transforms as vision_transforms
 
@@ -85,4 +82,3 @@ class ImageNet12(object):
                                                 num_workers=self.num_workers, 
                                                 pin_memory=self.pin_memory)
         return test_loader
-

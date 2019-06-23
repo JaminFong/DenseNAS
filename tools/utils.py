@@ -1,7 +1,6 @@
-import os
 import logging
+import os
 import shutil
-import time
 
 import numpy as np
 import torch
@@ -83,29 +82,12 @@ def create_exp_dir(path):
     print('Experiment dir : {}'.format(path))
 
 
-def prod_sample(weights, sample_num):
-    sampled_indices = []
-    
-    for j in range(sample_num):
-        while 1:
-            sample_factor = np.random.rand()
-            for k in range(len(weights)):
-                if sample_factor >= torch.sum(weights[0:k]) and \
-                    sample_factor < torch.sum(weights[0:k+1]):
-                    sampled_id = k
-                    break
-                else:
-                    continue
-            if sampled_id not in sampled_indices:
-                sampled_indices.append(sampled_id)
-                break
-            else:
-                continue
-
-    return sampled_indices
-
-
 def cross_entropy_with_label_smoothing(pred, target, label_smoothing=0.):
+    """
+    Label smoothing implementation.
+    This function is taken from https://github.com/MIT-HAN-LAB/ProxylessNAS/blob/master/proxyless_nas/utils.py
+    """
+
     logsoftmax = nn.LogSoftmax().cuda()
     n_classes = pred.size(1)
     # convert to one-hot
@@ -115,39 +97,3 @@ def cross_entropy_with_label_smoothing(pred, target, label_smoothing=0.):
     # label smoothing
     soft_target = soft_target * (1 - label_smoothing) + label_smoothing / n_classes
     return torch.mean(torch.sum(- soft_target * logsoftmax(pred), 1))
-
-
-def latency_measure(module, input_size, batch_size, meas_times, mode='gpu'):
-    assert mode in ['gpu', 'cpu']
-    
-    latency = []
-    module.eval()
-    input_size = (batch_size,) + tuple(input_size)    
-    input_data = torch.randn(input_size)
-    if mode=='gpu':
-        input_data = input_data.cuda()
-
-    for i in range(meas_times):
-        with torch.no_grad():
-            start = time.time()
-            _ = module(input_data)
-            if i >= 100:
-                latency.append(time.time() - start)
-    print(np.mean(latency) * 1e3, 'ms')
-    return np.mean(latency) * 1e3
-
-
-def latency_measure_fw(module, input_data, meas_times):
-    latency = []
-    module.eval()
-    
-    for i in range(meas_times):
-        with torch.no_grad():
-            start = time.time()
-            output_data = module(input_data)
-            if i >= 100:
-                latency.append(time.time() - start)
-
-    print(np.mean(latency) * 1e3, 'ms')
-    return np.mean(latency) * 1e3, output_data
-

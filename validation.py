@@ -5,11 +5,9 @@ import pprint
 import sys
 import time
 
-import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
-import torch.utils
 
 from configs.config import cfg
 from dataset import imagenet_data

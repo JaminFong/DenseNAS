@@ -1,5 +1,5 @@
 import torch
-import numpy as np;
+
 # Original implementation:
 # 	https://github.com/warmspringwinds/pytorch-segmentation-detection/blob/master/pytorch_segmentation_detection/utils/flops_benchmark.py
 

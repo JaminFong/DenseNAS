@@ -10,7 +10,8 @@ We propose a novel differentiable NAS method which can search for the width and 
 * python 3.6+
 
 ## Results
-DenseNAS obtains an architecture with 75.9\% top-1 accuracy on ImageNet and the latency is as low as 24.3ms on a single TITAN-XP. The total search time is merely 23 hours on 4 GPUs.
+DenseNAS obtains an architecture with 75.9\% top-1 accuracy on ImageNet and the latency is as low as 24.3ms on a single TITAN-XP. The total search time is merely 23 hours on 4 GPUs. For the GPU latency, we measure all the models with the same setup (on one TITAN-XP with batch size of 32).
+
 Our results on ImageNet are shown bellow.
 ![](data/results.png)
 

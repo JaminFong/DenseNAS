@@ -1,5 +1,5 @@
 # DenseNAS
-The evaluation code of the paper [Densely Connected Search Space for More Flexible Neural Architecture Search]
+The evaluation code of the paper [Densely Connected Search Space for More Flexible Neural Architecture Search](https://arxiv.org/abs/1906.09607)
 
 We propose a novel differentiable NAS method which can search for the width and the spatial resolution of each block simultaneously. We achieve this by constructing a densely connected search space and name our method as DenseNAS. Blocks with different width and spatial resolution combinations are densely connected to each other. The best path in the super network is selected by optimizing the transition probabilities between blocks. As a result the overall depth distribution of the network is optimized globally in a graceful manner. 
 

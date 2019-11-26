@@ -15,29 +15,17 @@ For experiments on the MobileNetV2-based search space, DenseNAS achieves 75.3\% 
 
 The comparison of model performance on ImageNet under the MobileNetV2-based search spaces.
 
-<table>
-    <tr>
-        <td width="45%">
-            <img src="imgs/mbv2_results.png" />
-        </td>
-        <td width="40%">
-            <img src="imgs/mbv2_comp.png" />
-        </td>
-    </tr>
-</table>
+<p align="center">
+<img src="imgs/mbv2_results.png" width="45%">
+<img src="imgs/mbv2_comp.png" width="40%">
+</p>
 
 The comparison of model performance on ImageNet under the ResNet-based search spaces.
 
-<table>
-    <tr>
-        <td width="45%">
-            <img src="imgs/res_results.png" />
-        </td>
-        <td width="45%">
-            <img src="imgs/res_comp.png" />
-        </td>
-    </tr>
-</table>
+<p align="center">
+<img src="imgs/res_results.png" width="45%">
+<img src="imgs/res_comp.png" width="40%">
+</p>
 
 Our pre-trained models can be downloaded in the following links:
 

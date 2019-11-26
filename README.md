@@ -15,26 +15,25 @@ For experiments on the MobileNetV2-based search space, DenseNAS achieves 75.3\% 
 
 The comparison of model performance on ImageNet under the MobileNetV2-based search spaces.
 <figure class="half">
-    <img src="imgs/mbv2_results.png" width="350">
-    <img src="imgs/mbv2_comp.png" width="320">
+    <img src="imgs/mbv2_results.png" width="350"/><img src="imgs/mbv2_comp.png" width="320"/>
 </figure>
 
 The comparison of model performance on ImageNet under the ResNet-based search spaces.
 <figure class="half">
-    <img src="imgs/res_results.png" width="350">
-    <img src="imgs/res_comp.png" width="320">
+    <img src="imgs/res_results.png" width="350"/><img src="imgs/res_comp.png" width="320"/>
 </figure>
 
 Our pre-trained models can be downloaded in the following links:
-| Model                | FLOPs | Latency | Top-1(%)|
-|----------------------|-------|---------|---------|
-| [DenseNAS-Large](https://drive.google.com/open?id=14Zgc-IlxjaRtGyDHJSdMpLHVvOd0Km1u) | 479M  | 28.9ms  | 76.1    |
-| [DenseNAS-A](https://drive.google.com/open?id=1ZdephrAY4GVRqv9SvOXoJDUmO-kWhhml) | 251M  | 13.6ms  | 73.1    |
-| [DenseNAS-B](https://drive.google.com/open?id=1djhL5P1vsWVqWuT5lR7UCxEhw4cET__7) | 314M  | 15.4ms  | 74.6    |
-| [DenseNAS-C](https://drive.google.com/open?id=1L2mqir89b1UiBkePmrtjG6QLi9MqzRdQ) | 361M  | 17.9ms  | 75.3    |
-| [DenseNAS-R1](https://drive.google.com/open?id=1YaMWb1LKpgSS5mgBcB3CthTGtTIOtxWw) | 1.61B | 12.0ms  | 73.5    |
-| [DenseNAS-R2](https://drive.google.com/open?id=1Qawst3E2hqdam2TiTFo2BhBXS-M6AWdh) | 3.06B | 22.2ms  | 75.8    |
-| [DenseNAS-R3](https://drive.google.com/open?id=14RwIGWsurNvevhxL9AcnlngU0KR8WeX-) | 3.41B | 41.7ms  | 78.0    |
+
+| Model                | FLOPs | Latency | Top-1(%)| 
+|----------------------|-------|---------|---------| 
+| [DenseNAS-Large](https://drive.google.com/open?id=14Zgc-IlxjaRtGyDHJSdMpLHVvOd0Km1u) | 479M  | 28.9ms  | 76.1    | 
+| [DenseNAS-A](https://drive.google.com/open?id=1ZdephrAY4GVRqv9SvOXoJDUmO-kWhhml) | 251M  | 13.6ms  | 73.1    | 
+| [DenseNAS-B](https://drive.google.com/open?id=1djhL5P1vsWVqWuT5lR7UCxEhw4cET__7) | 314M  | 15.4ms  | 74.6    | 
+| [DenseNAS-C](https://drive.google.com/open?id=1L2mqir89b1UiBkePmrtjG6QLi9MqzRdQ) | 361M  | 17.9ms  | 75.3    | 
+| [DenseNAS-R1](https://drive.google.com/open?id=1YaMWb1LKpgSS5mgBcB3CthTGtTIOtxWw) | 1.61B | 12.0ms  | 73.5    | 
+| [DenseNAS-R2](https://drive.google.com/open?id=1Qawst3E2hqdam2TiTFo2BhBXS-M6AWdh) | 3.06B | 22.2ms  | 75.8    | 
+| [DenseNAS-R3](https://drive.google.com/open?id=14RwIGWsurNvevhxL9AcnlngU0KR8WeX-) | 3.41B | 41.7ms  | 78.0    | 
 
 ![](imgs/archs.png)
 

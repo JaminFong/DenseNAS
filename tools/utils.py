@@ -5,7 +5,6 @@ import shutil
 import numpy as np
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 
 
 class AvgrageMeter(object):
@@ -58,22 +57,21 @@ def save(model, model_path):
 
 def load_net_config(path):
     with open(path, 'r') as f:
-        return f.readline()
+        net_config = ''
+        while True:
+            line = f.readline().strip()
+            if 'net_type' in line:
+                net_type = line.split(': ')[-1]
+                break
+            else:
+                net_config += line
+    return net_config, net_type
 
 
 def load_model(model, model_path):
     logging.info('Start loading the model from ' + model_path)
     model.load_state_dict(torch.load(model_path))
     logging.info('Loading the model finished!')
-
-
-def drop_path(x, drop_prob):
-    if drop_prob > 0.:
-        keep_prob = 1.-drop_prob
-        mask = Variable(torch.cuda.FloatTensor(x.size(0), 1, 1, 1).bernoulli_(keep_prob))
-        x.div_(keep_prob)
-        x.mul_(mask)
-    return x
 
 
 def create_exp_dir(path):
@@ -97,3 +95,8 @@ def cross_entropy_with_label_smoothing(pred, target, label_smoothing=0.):
     # label smoothing
     soft_target = soft_target * (1 - label_smoothing) + label_smoothing / n_classes
     return torch.mean(torch.sum(- soft_target * logsoftmax(pred), 1))
+
+
+def parse_net_config(net_config):
+    str_configs = net_config.split('|')
+    return [eval(str_config) for str_config in str_configs]

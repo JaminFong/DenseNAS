@@ -11,12 +11,12 @@ import torch.nn as nn
 
 from configs.config import cfg
 from dataset import imagenet_data
-from model_derived import Network
+from model_derived import MBV2_Net, Res_Net
 from tools import utils
 from tools.multadds_count import comp_multadds
 
 parser = argparse.ArgumentParser("Params")
-parser.add_argument('--report_freq', type=float, default=10, help='report frequency')
+parser.add_argument('--report_freq', type=float, default=50, help='report frequency')
 parser.add_argument('--data_path', type=str, default='../data', help='location of the dataset')
 parser.add_argument('--load_path', type=str, default='./model_path', help='model loading path')
 parser.add_argument('--save', type=str, default='./', help='the path of output')
@@ -85,9 +85,14 @@ if __name__ == '__main__':
     logging.info('Training with config:')
     logging.info(pprint.pformat(config))
 
-    config.net_config = utils.load_net_config(os.path.join(args.load_path, 'net_config'))
+    config.net_config, net_type = utils.load_net_config(os.path.join(args.load_path, 'net_config'))
 
-    model = Network(config.net_config, 'ImageNet', config=config)
+    if net_type=='mbv2':
+        model = MBV2_Net(config.net_config, config=config)
+    elif net_type=='res':
+        model = Res_Net(config.net_config, config=config)
+    else:
+        raise TypeError
     
     logging.info("Network Structure: \n" + '\n'.join(map(str, model.net_config)))
     logging.info("Params = %.2fMB" % utils.count_parameters_in_MB(model))
@@ -95,9 +100,7 @@ if __name__ == '__main__':
 
     model = model.cuda()
     model = nn.DataParallel(model)
-
     utils.load_model(model, os.path.join(args.load_path, 'weights.pt'))
-
     criterion = nn.CrossEntropyLoss()
     criterion = criterion.cuda()
 
@@ -105,7 +108,6 @@ if __name__ == '__main__':
                             testFolder=os.path.join(args.data_path, 'val'),
                             num_workers=config.train_params.num_workers,
                             data_config=config.data)
-    
     valid_queue = imagenet.getTestLoader(config.train_params.batch_size)
     
     with torch.no_grad():

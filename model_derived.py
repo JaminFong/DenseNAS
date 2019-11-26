@@ -1,9 +1,10 @@
 import math
-
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from operations import *
+from operations import OPS
+from tools.utils import parse_net_config
 
 
 class Block(nn.Module):
@@ -38,48 +39,46 @@ class Conv1_1_Block(nn.Module):
         return self.conv1_1(x)
 
 
-class Network(nn.Module):
-
-    def __init__(self, net_config, dataset, config=None):
+class MBV2_Net(nn.Module):
+    def __init__(self, net_config, config=None):
         """
         net_config=[[in_ch, out_ch], head_op, [stack_ops], num_stack_layers, stride]
-        aux_config=[True/False, ch, block_idx, aux_weight]
         """
-        super(Network, self).__init__()
+        super(MBV2_Net, self).__init__()
         self.config = config
-        self.net_config = self.parse_net_config(net_config)
-
-        self._C_input = self.net_config[0][0][0]
-
-        self._dataset = dataset
-        self._num_classes = 10 if self._dataset=='cifar10' else 1000
+        self.net_config = parse_net_config(net_config)
+        self.in_chs = self.net_config[0][0][0]
+        self._num_classes = 1000
 
         self.input_block = nn.Sequential(
-            nn.Conv2d(in_channels=3, out_channels=self._C_input, kernel_size=3, 
-                    stride=1 if self._dataset=='cifar10' else 2,
-                    padding=1, bias=False),
-            nn.BatchNorm2d(self._C_input),
+            nn.Conv2d(in_channels=3, out_channels=self.in_chs, kernel_size=3, 
+                    stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(self.in_chs),
             nn.ReLU6(inplace=True)
         )
-
         self.blocks = nn.ModuleList()
-        for cfg in self.net_config:
-            self.blocks.append(Block(cfg[0][0], cfg[0][1], 
-                                cfg[1], cfg[2], cfg[-1]))
+        for config in self.net_config:
+            if config[1] == 'conv1_1':
+                continue
+            self.blocks.append(Block(config[0][0], config[0][1], 
+                            config[1], config[2], config[-1]))
 
-        self.conv1_1_block = Conv1_1_Block(self.net_config[-1][0][1], self.config.optim.last_dim)
+        if self.net_config[-1][1] == 'conv1_1':
+            block_last_dim = self.net_config[-1][0][0]
+            last_dim = self.net_config[-1][0][1]
+        else:
+            block_last_dim = self.net_config[-1][0][1]
+        self.conv1_1_block = Conv1_1_Block(block_last_dim, last_dim)
 
         self.global_pooling = nn.AdaptiveAvgPool2d(1)
-        self.classifier = nn.Linear(self.config.optim.last_dim, self._num_classes)
-        self.set_bn_param(self.config.optim.bn_momentum, self.config.optim.bn_eps)
+        self.classifier = nn.Linear(last_dim, self._num_classes)
+        self.set_bn_param(0.1, 0.001)
 
 
     def forward(self,x):
         block_data = self.input_block(x)
-
         for i, block in enumerate(self.blocks):
             block_data = block(block_data)
-
         block_data = self.conv1_1_block(block_data)
 
         out = self.global_pooling(block_data)
@@ -96,6 +95,43 @@ class Network(nn.Module):
         return
 
 
-    def parse_net_config(self, net_config):
-        str_configs = net_config.split('|')
-        return [eval(str_config) for str_config in str_configs]
+class Res_Net(nn.Module):
+
+    def __init__(self, net_config, config=None):
+        """
+        net_config=[[in_ch, out_ch], head_op, [stack_ops], num_stack_layers, stride]
+        """
+        super(Res_Net, self).__init__()
+        self.config = config
+        self.net_config = parse_net_config(net_config)
+        self.in_chs = self.net_config[0][0][0]
+        self._num_classes = 1000
+
+        self.input_block = nn.Sequential(
+            nn.Conv2d(in_channels=3, out_channels=self.in_chs, kernel_size=3, 
+                    stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(self.in_chs),
+            nn.ReLU6(inplace=True),
+        )
+        self.blocks = nn.ModuleList()
+        for config in self.net_config:
+            self.blocks.append(Block(config[0][0], config[0][1], 
+                            config[1], config[2], config[-1]))
+
+        self.global_pooling = nn.AdaptiveAvgPool2d((1, 1))
+        if self.net_config[-1][1] == 'bottle_neck':
+            last_dim = self.net_config[-1][0][-1] * 4
+        else:
+            last_dim = self.net_config[-1][0][1]
+        self.classifier = nn.Linear(last_dim, self._num_classes)
+
+
+    def forward(self, x):        
+        block_data = self.input_block(x)
+        for i, block in enumerate(self.blocks):
+            block_data = block(block_data)
+
+        out = self.global_pooling(block_data)
+        out = torch.flatten(out, 1)
+        logits = self.classifier(out)
+        return logits

@@ -14,14 +14,30 @@ We propose to search block counts and block widths by designing a densely connec
 For experiments on the MobileNetV2-based search space, DenseNAS achieves 75.3\% top-1 accuracy on ImageNet with only 361MB FLOPs and 17.9ms latency on a single TITAN-XP. The larger model searched by DenseNAS achieves 76.1\% accuracy with only 479M FLOPs. DenseNAS further promotes the ImageNet classification accuracies of ResNet-18, -34 and -50-B by 1.5\%, 0.5\% and 0.3\% with 200M, 600M and 680M FLOPs reduction respectively.
 
 The comparison of model performance on ImageNet under the MobileNetV2-based search spaces.
-<figure class="half">
-    <img src="imgs/mbv2_results.png" width="350"/><img src="imgs/mbv2_comp.png" width="320"/>
-</figure>
+
+<table>
+    <tr>
+        <td width="45%">
+            <img src="imgs/mbv2_results.png" />
+        </td>
+        <td width="40%">
+            <img src="imgs/mbv2_comp.png" />
+        </td>
+    </tr>
+</table>
 
 The comparison of model performance on ImageNet under the ResNet-based search spaces.
-<figure class="half">
-    <img src="imgs/res_results.png" width="350"/><img src="imgs/res_comp.png" width="320"/>
-</figure>
+
+<table>
+    <tr>
+        <td width="45%">
+            <img src="imgs/res_results.png" />
+        </td>
+        <td width="45%">
+            <img src="imgs/res_comp.png" />
+        </td>
+    </tr>
+</table>
 
 Our pre-trained models can be downloaded in the following links:
 

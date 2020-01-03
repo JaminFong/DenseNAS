@@ -43,7 +43,6 @@ __C.data.random_sized.min_scale=0.08
 __C.data.mean=[0.485, 0.456, 0.406]
 __C.data.std=[0.229, 0.224, 0.225]
 __C.data.color=False
-__C.data.lighting=False
 
 __C.optim.use_warm_up=False
 __C.optim.warm_up=AttrDict()

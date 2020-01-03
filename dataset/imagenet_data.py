@@ -8,16 +8,6 @@ from . import lmdb_dataset
 from . import torchvision_extension as transforms_extension
 from .prefetch_data import fast_collate
 
-pca = {
-   'eigval': torch.Tensor([0.2175, 0.0188, 0.0045]),
-   'eigvec': torch.Tensor([
-      [-0.5675,  0.7192,  0.4009],
-      [-0.5808, -0.0045, -0.8140],
-      [-0.5836, -0.6948,  0.4203],
-   ])
-}
-
-
 class ImageNet12(object):
 
     def __init__(self, trainFolder, testFolder, num_workers=8, pin_memory=True, 
@@ -30,7 +20,6 @@ class ImageNet12(object):
         self.num_workers = num_workers
         self.pin_memory = pin_memory
         self.patch_dataset = self.data_config.patch_dataset
-        self.pca = pca
 
         #images will be rescaled to match this size
         if not isinstance(size_images, int):
@@ -73,10 +62,6 @@ class ImageNet12(object):
                 list_of_transforms.append(transforms.ColorJitter(brightness=0.4,
                                                                 contrast=0.4,
                                                                 saturation=0.4))
-            if self.data_config.lighting:
-                list_of_transforms.append(transforms_extension.Lighting(alphastd=0.1,
-                                                                            eigval=self.pca['eigval'],
-                                                                            eigvec=self.pca['eigvec']))        
         return transforms.Compose(list_of_transforms)
 
 

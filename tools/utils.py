@@ -1,14 +1,15 @@
 import logging
 import os
 import shutil
+import sys
+import logging
 
 import numpy as np
 import torch
 import torch.nn as nn
 
 
-class AvgrageMeter(object):
-
+class AverageMeter(object):
     def __init__(self):
         self.reset()
 
@@ -100,3 +101,33 @@ def cross_entropy_with_label_smoothing(pred, target, label_smoothing=0.):
 def parse_net_config(net_config):
     str_configs = net_config.split('|')
     return [eval(str_config) for str_config in str_configs]
+
+
+def set_seed(seed):
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+
+
+def set_logging(save_path, log_name='log.txt'):
+    log_format = '%(asctime)s %(message)s'
+    date_format = '%m/%d %H:%M:%S'
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO,
+        format=log_format, datefmt=date_format)
+    fh = logging.FileHandler(os.path.join(save_path, log_name))
+    fh.setFormatter(logging.Formatter(log_format, date_format))
+    logging.getLogger().addHandler(fh)
+
+
+def create_save_dir(save_path, job_name):
+    if job_name != '':
+        job_name = time.strftime("%Y%m%d-%H%M%S-") + job_name
+        save_path = os.path.join(save_path, job_name)
+        create_exp_dir(save_path)
+        os.system('cp -r ./* '+save_path)
+        save_path = os.path.join(save_path, 'output')
+        create_exp_dir(save_path)
+    else:
+        save_path = os.path.join(save_path, 'output')
+        create_exp_dir(save_path)
+    return save_path, job_name

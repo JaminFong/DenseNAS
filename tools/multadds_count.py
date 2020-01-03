@@ -1,5 +1,4 @@
 import torch
-
 # Original implementation:
 # 	https://github.com/warmspringwinds/pytorch-segmentation-detection/blob/master/pytorch_segmentation_detection/utils/flops_benchmark.py
 
@@ -7,9 +6,9 @@ import torch
 
 def comp_multadds(model, input_size=(3,224,224), half=False):
     input_size = (1,) + tuple(input_size)
-    model = add_flops_counting_methods(model)
     model = model.cuda()
     input_data = torch.randn(input_size).cuda()
+    model = add_flops_counting_methods(model)
     if half:
         input_data = input_data.half()
     model.start_flops_count()

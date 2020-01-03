@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from operations import OPS
+from .operations import OPS
 from tools.utils import parse_net_config
 
 
@@ -11,11 +11,13 @@ class Block(nn.Module):
 
     def __init__(self, in_ch, block_ch, head_op, stack_ops, stride):
         super(Block, self).__init__()
-        self.head_layer = OPS[head_op](in_ch, block_ch, stride, affine=True, track_running_stats=True)
+        self.head_layer = OPS[head_op](in_ch, block_ch, stride, 
+                                        affine=True, track_running_stats=True)
 
         modules = []
         for stack_op in stack_ops:
-            modules.append(OPS[stack_op](block_ch, block_ch, 1, affine=True, track_running_stats=True))
+            modules.append(OPS[stack_op](block_ch, block_ch, 1, 
+                                        affine=True, track_running_stats=True))
         self.stack_layers = nn.Sequential(*modules)
     
     def forward(self, x):
@@ -72,6 +74,8 @@ class MBV2_Net(nn.Module):
 
         self.global_pooling = nn.AdaptiveAvgPool2d(1)
         self.classifier = nn.Linear(last_dim, self._num_classes)
+
+        self.init_model()
         self.set_bn_param(0.1, 0.001)
 
 
@@ -86,6 +90,30 @@ class MBV2_Net(nn.Module):
 
         return logits
 
+    def init_model(self, model_init='he_fout', init_div_groups=True):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                if model_init == 'he_fout':
+                    n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                    if init_div_groups:
+                        n /= m.groups
+                    m.weight.data.normal_(0, math.sqrt(2. / n))
+                elif model_init == 'he_fin':
+                    n = m.kernel_size[0] * m.kernel_size[1] * m.in_channels
+                    if init_div_groups:
+                        n /= m.groups
+                    m.weight.data.normal_(0, math.sqrt(2. / n))
+                else:
+                    raise NotImplementedError
+            elif isinstance(m, nn.BatchNorm2d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+            elif isinstance(m, nn.Linear):
+                if m.bias is not None:
+                    m.bias.data.zero_()
+            elif isinstance(m, nn.BatchNorm1d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
 
     def set_bn_param(self, bn_momentum, bn_eps):
         for m in self.modules():
@@ -95,13 +123,12 @@ class MBV2_Net(nn.Module):
         return
 
 
-class Res_Net(nn.Module):
-
+class RES_Net(nn.Module):
     def __init__(self, net_config, config=None):
         """
         net_config=[[in_ch, out_ch], head_op, [stack_ops], num_stack_layers, stride]
         """
-        super(Res_Net, self).__init__()
+        super(RES_Net, self).__init__()
         self.config = config
         self.net_config = parse_net_config(net_config)
         self.in_chs = self.net_config[0][0][0]
@@ -125,6 +152,13 @@ class Res_Net(nn.Module):
             last_dim = self.net_config[-1][0][1]
         self.classifier = nn.Linear(last_dim, self._num_classes)
 
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            elif isinstance(m, (nn.BatchNorm2d, nn.GroupNorm)):
+                if m.affine==True:
+                    nn.init.constant_(m.weight, 1)
+                    nn.init.constant_(m.bias, 0)
 
     def forward(self, x):        
         block_data = self.input_block(x)

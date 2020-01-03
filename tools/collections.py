@@ -15,8 +15,6 @@
 
 """A simple attribute dictionary used for representing configuration options."""
 
-# The code is taken from https://github.com/facebookresearch/Detectron/blob/master/detectron/utils/collections.py
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

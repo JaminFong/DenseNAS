@@ -30,7 +30,7 @@ __C.optim.resume.load_epoch=0
 
 __C.data=AttrDict()
 __C.data.num_workers=16
-__C.data.batch_size=256
+__C.data.batch_size=1024
 __C.data.dataset='imagenet' #imagenet
 __C.data.train_data_type='lmdb'
 __C.data.val_data_type='img'

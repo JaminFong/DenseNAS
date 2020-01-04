@@ -64,9 +64,9 @@ if __name__ == '__main__':
 
     imagenet = imagenet_data.ImageNet12(trainFolder=os.path.join(args.data_path, 'train'),
                             testFolder=os.path.join(args.data_path, 'val'),
-                            num_workers=config.train_params.num_workers,
+                            num_workers=config.data.num_workers,
                             data_config=config.data)
-    valid_queue = imagenet.getTestLoader(config.train_params.batch_size)
+    valid_queue = imagenet.getTestLoader(config.data.batch_size)
     trainer = Trainer(None, valid_queue, None, None, 
                         None, config, args.report_freq)
 

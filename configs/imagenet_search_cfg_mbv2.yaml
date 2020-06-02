@@ -1,0 +1,77 @@
+net_type: mbv2
+train_params:
+    epochs: 150
+    use_seed: True
+    seed: 2
+
+search_params:
+    arch_update_epoch: 50
+    val_start_epoch: 120
+    sample_policy: prob # prob uniform
+    weight_sample_num: 1
+    softmax_temp: 1.
+
+    PRIMITIVES_stack: ['mbconv_k3_t3',
+                        'mbconv_k3_t6',
+                        'mbconv_k5_t3',
+                        'mbconv_k5_t6',
+                        'mbconv_k7_t3',
+                        'mbconv_k7_t6',
+                        'skip_connect',]
+    PRIMITIVES_head: ['mbconv_k3_t3',
+                        'mbconv_k3_t6',
+                        'mbconv_k5_t3',
+                        'mbconv_k5_t6',
+                        'mbconv_k7_t3',
+                        'mbconv_k7_t6',
+                        ]
+    # search space
+    adjoin_connect_nums: [4, 4, 4, 4, 4, 4, 4]
+    net_scale:
+        chs: [16, 24, 32, 40, 48, 56, 64, 72, 96, 112, 128, 160, 176, 192, 320, 352, 384]
+        fm_sizes: [112, 56, 28, 28, 28, 14, 14, 14, 14, 14, 14, 7, 7, 7, 7, 7, 7]
+        stage: [0, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7]
+        num_layers: [0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0]
+
+optim:
+    if_sub_obj: True
+    sub_obj:
+        type: latency 
+        skip_reg: False
+        log_base: 15.0 
+        sub_loss_factor: 0.15
+        latency_list_path: lat_list_densenas_mbv2_xp32
+
+    if_resume: False
+    resume:
+        load_path: ''
+        load_epoch: 49
+
+    init_dim: 16
+    head_dim: 16
+    last_dim: 1984
+    bn_momentum: 0.1
+    bn_eps: 0.001
+    weight:
+        init_lr: 0.2
+        min_lr: 0.0001
+        lr_decay_type: cosine
+        momentum: 0.9
+        weight_decay: 0.00004
+    arch:
+        alpha_lr: 0.0003
+        beta_lr: 0.0003
+        weight_decay: 0.001
+
+data:
+    dataset: imagenet
+    batch_size: 352
+    num_workers: 16
+    train_data_type: lmdb
+    val_data_type: lmdb
+    input_size: (3,224,224)
+    type_of_data_aug: random_sized # random_sized / rand_scale
+    color: False
+    random_sized:
+        min_scale: 0.08
+        

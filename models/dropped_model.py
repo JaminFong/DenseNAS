@@ -132,7 +132,7 @@ class Dropped_Network(nn.Module):
         To approximate the the total sub_obj(latency/flops), we firstly create the obj list for blocks
         as follows:
             [[[head_flops_1, head_flops_2, ...], stack_flops], ...]
-        The we compute the whole obj approximation from the end to the beginning. For block b, 
+        Then we compute the whole obj approximation from the end to the beginning. For block b, 
             flops'_b = sum(beta_{bi} * (head_flops_{bi} + stack_flops_{i}) for i in out_idx[b])
         The total flops equals flops'_0
         '''

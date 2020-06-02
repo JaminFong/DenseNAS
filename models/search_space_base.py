@@ -6,7 +6,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from tools.multadds_count import comp_multadds, comp_multadds_fw
+from tools.multadds_count import comp_multadds_fw
+from tools.utils import latency_measure_fw
+from . import operations
 from .operations import OPS
 
 
@@ -368,19 +370,34 @@ class Network(nn.Module):
         logging.info('Network input configs: \n' + '\n'.join(map(str, self.input_configs)))
 
 
-    def get_flops_list(self, data_shape):
-        flops_list = []
+    def get_cost_list(self, data_shape, cost_type='flops', 
+                            use_gpu=True, meas_times=1000):
+        cost_list = []
         block_datas = []
-        total_flops = 0
+        total_cost = 0
+        if cost_type == 'flops':
+            cost_func = lambda module, data: comp_multadds_fw(
+                                        module, data, use_gpu)
+        elif cost_type == 'latency':
+            cost_func = lambda module, data: latency_measure_fw(
+                                        module, data, meas_times)
+        else:
+            raise NotImplementedError
 
-        input_data = torch.randn((1,) + tuple(data_shape)).cuda()
-        flops, block_data = comp_multadds_fw(self.input_block, input_data)
-        flops_list.append(flops)
+        if len(data_shape) == 3:
+            input_data = torch.randn((1,) + tuple(data_shape))
+        else:
+            input_data = torch.randn(tuple(data_shape))
+        if use_gpu:
+            input_data = input_data.cuda()
+
+        cost, block_data = cost_func(self.input_block, input_data)
+        cost_list.append(cost)
         block_datas.append(block_data)
-        total_flops += flops
+        total_cost += cost
         if hasattr(self, 'head_block'):
-            flops, block_data = comp_multadds_fw(self.head_block, block_data)
-            flops_list[0] += flops
+            cost, block_data = cost_func(self.head_block, block_data)
+            cost_list[0] += cost
             block_datas[0] = block_data
 
         block_flops = []
@@ -392,9 +409,9 @@ class Network(nn.Module):
             for branch_id, head_branch in enumerate(block.head_layer.head_branches):
                 op_flops = []
                 for op in head_branch._ops:
-                    flops, block_data = comp_multadds_fw(op, inputs[branch_id])
-                    op_flops.append(flops)
-                    total_flops += flops
+                    cost, block_data = cost_func(op, inputs[branch_id])
+                    op_flops.append(cost)
+                    total_cost += cost
 
                 head_branch_flops.append(op_flops)
             
@@ -403,33 +420,34 @@ class Network(nn.Module):
                 for stack_layer in block.stack_layers.stack_layers:
                     op_flops = []
                     for op in stack_layer._ops:
-                        flops, block_data = comp_multadds_fw(op, block_data)
-                        if flops==0:
-                            flops = op_flops[0] / 10.
-                        op_flops.append(flops)
-                        total_flops += flops
+                        cost, block_data = cost_func(op, block_data)
+                        if isinstance(op, operations.Skip) and \
+                                self.config.optim.sub_obj.skip_reg:
+                            # skip_reg is used for regularization as the cost of skip is too small
+                            cost = op_flops[0] / 10.
+                        op_flops.append(cost)
+                        total_cost += cost
                     stack_layer_flops.append(op_flops)
             block_flops.append([head_branch_flops, stack_layer_flops])
             block_datas.append(block_data)
             
-        flops_list.append(block_flops)
+        cost_list.append(block_flops)
         
         conv1_1_flops = []
         input_config = self.input_configs[-1]
         inputs = [block_datas[i] for i in input_config['in_block_idx']]
         for branch_id, branch in enumerate(self.conv1_1_block.conv1_1_branches):
-            flops, block_data = comp_multadds_fw(branch, inputs[branch_id])
-            conv1_1_flops.append(flops)
-            total_flops += flops
+            cost, block_data = cost_func(branch, inputs[branch_id])
+            conv1_1_flops.append(cost)
+            total_cost += cost
         block_datas.append(block_data)
 
-        flops_list.append(conv1_1_flops)
+        cost_list.append(conv1_1_flops)
         out = block_datas[-1]
         out = self.global_pooling(out)
 
-        flops, out = comp_multadds_fw(self.classifier, out.view(out.size(0), -1))
-        flops_list.append(flops)
-        total_flops += flops
+        cost, out = cost_func(self.classifier, out.view(out.size(0), -1))
+        cost_list.append(cost)
+        total_cost += cost
 
-        self.flops_list = flops_list
-        return flops_list, total_flops
+        return cost_list, total_cost

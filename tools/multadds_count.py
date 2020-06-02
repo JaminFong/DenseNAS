@@ -4,13 +4,11 @@ import torch
 
 # ---- Public functions
 
-def comp_multadds(model, input_size=(3,224,224), half=False):
+def comp_multadds(model, input_size=(3,224,224)):
     input_size = (1,) + tuple(input_size)
     model = model.cuda()
     input_data = torch.randn(input_size).cuda()
     model = add_flops_counting_methods(model)
-    if half:
-        input_data = input_data.half()
     model.start_flops_count()
     with torch.no_grad():
         _ = model(input_data)
@@ -19,9 +17,10 @@ def comp_multadds(model, input_size=(3,224,224), half=False):
     return mult_adds
 
 
-def comp_multadds_fw(model, input_data):
+def comp_multadds_fw(model, input_data, use_gpu=True):
     model = add_flops_counting_methods(model)
-    model = model.cuda()
+    if use_gpu:
+        model = model.cuda()
     model.start_flops_count()
     with torch.no_grad():
         output_data = model(input_data)

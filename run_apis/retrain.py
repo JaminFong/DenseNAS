@@ -28,6 +28,7 @@ if __name__ == '__main__':
     parser.add_argument('--load_path', type=str, default='./model_path', help='model loading path')
     parser.add_argument('--save', type=str, default='../', help='experiment name')
     parser.add_argument('--tb_path', type=str, default='', help='tensorboard output path')
+    parser.add_argument('--meas_lat', type=ast.literal_eval, default='False', help='whether to measure the latency of the model')
     parser.add_argument('--job_name', type=str, default='', help='job_name')
     args = parser.parse_args()
 
@@ -60,13 +61,20 @@ if __name__ == '__main__':
     logging.info('Training with config:')
     logging.info(pprint.pformat(config))
 
-    config.net_config, net_type = utils.load_net_config(os.path.join(args.load_path, 'net_config'))
-    derivedNetwork = getattr(model_derived, '%s_Net' % net_type.upper())
+    if os.path.isfile(os.path.join(args.load_path, 'net_config')):
+        config.net_config, config.net_type = utils.load_net_config(
+                                os.path.join(args.load_path, 'net_config'))
+    derivedNetwork = getattr(model_derived, '%s_Net' % config.net_type.upper())
     model = derivedNetwork(config.net_config, config=config)
 
     model.eval()
     if hasattr(model, 'net_config'):
         logging.info("Network Structure: \n" + '|\n'.join(map(str, model.net_config)))
+    if args.meas_lat:
+        latency_cpu = utils.latency_measure(model, (3, 224, 224), 1, 2000, mode='cpu')
+        logging.info('latency_cpu (batch 1): %.2fms' % latency_cpu)
+        latency_gpu = utils.latency_measure(model, (3, 224, 224), 32, 5000, mode='gpu')
+        logging.info('latency_gpu (batch 32): %.2fms' % latency_gpu)
     params = utils.count_parameters_in_MB(model)
     logging.info("Params = %.2fMB" % params)
     mult_adds = comp_multadds(model, input_size=config.data.input_size)
@@ -107,8 +115,8 @@ if __name__ == '__main__':
     else:
         train_queue, valid_queue = imagenet.getTrainTestLoader(config.data.batch_size)
     
-    scheduler = get_lr_scheduler(config, optimizer)
-    scheduler.last_step = start_epoch * (config.data.num_examples // config.data.batch_size + 1)-1
+    scheduler = get_lr_scheduler(config, optimizer, train_queue.dataset.__len__())
+    scheduler.last_step = start_epoch * (train_queue.dataset.__len__() // config.data.batch_size + 1)-1
 
     trainer = Trainer(train_queue, valid_queue, optimizer, criterion, scheduler, config, args.report_freq)
 

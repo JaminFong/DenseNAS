@@ -1,0 +1,83 @@
+net_type: res
+train_params:
+    epochs: 70
+    use_seed: True
+    seed: 2
+
+search_params:
+    val_start_epoch: 50
+    arch_update_epoch: 10
+    sample_policy: prob # prob uniform
+    weight_sample_num: 1
+    softmax_temp: 0.9
+
+    PRIMITIVES_stack: ['basic_block',
+                        'skip_connect',]
+    PRIMITIVES_head: ['basic_block',
+                        ]
+
+    adjoin_connect_nums: [10, 10, 10, 10, 10, 10, 10]
+    net_scale:
+        chs: [32, 
+            48, 56, 64, 
+            72, 96, 112, 
+            128, 144, 160, 176, 192, 208, 224, 
+            240, 256, 272, 288, 480, 496, 512]
+        fm_sizes: [112, 
+            56, 56, 56, 
+            28, 28, 28, 
+            14, 14, 14, 14, 14, 14, 14,
+            7,  7,  7,  7,  7,  7,  7]
+        stage: [0, 
+            1, 1, 1, 
+            2, 2, 2, 
+            3, 3, 3, 3, 4, 4, 4,
+            5, 5, 5, 5, 6, 6, 6,
+            7]
+        num_layers: [0, 
+            0, 0, 0,
+            5, 5, 5,
+            15, 15, 15, 15, 5, 5, 5,
+            5, 5, 5, 5, 1, 1, 1]
+
+optim:
+    last_dim: 512
+    init_dim: 32
+    bn_momentum: 0.1
+    bn_eps: 0.001
+    weight:
+        init_lr: 0.2
+        min_lr: 0.0001
+        lr_decay_type: cosine
+        momentum: 0.9
+        weight_decay: 0.00004
+    arch:
+        alpha_lr: 0.0003
+        beta_lr: 0.0003
+        weight_decay: 0.001
+
+    if_sub_obj: True
+    sub_obj:
+        type: flops
+        skip_reg: True
+        log_base: 3500.
+        sub_loss_factor: 0.2
+    
+    if_resume: False
+    resume:
+        load_path: ''
+        load_epoch: 9
+
+data:
+    batch_size: 512
+    num_workers: 16
+    dataset: imagenet
+    train_data_type: lmdb
+    val_data_type: lmdb
+    patch_dataset: False
+    input_size: (3,224,224)
+    type_of_data_aug: random_sized
+    color: False
+    random_sized:
+        min_scale: 0.08
+        

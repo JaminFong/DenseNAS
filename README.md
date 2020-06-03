@@ -32,7 +32,7 @@ We propose to search block counts and block widths by designing a densely connec
 For MobileNetV2 search:<br>
 `python -m run_apis.search --data_path 'the path of the split dataset' --config configs/imagenet_search_cfg_mbv2.yaml`<br>
 For ResNet search:<br>
-`python -m run_apis.search --data_path 'the path of the split dataset' --config configs/imagenet_search_cfg_mbv2.yaml`
+`python -m run_apis.search --data_path 'the path of the split dataset' --config configs/imagenet_search_cfg_resnet.yaml`
 
 ## Train
 

@@ -5,7 +5,7 @@ import os
 def get_list(data_path, output_path):
     for split in os.listdir(data_path):
         if split == 'train':
-            split_path = os.path.join(data_path, 'train_img')
+            split_path = os.path.join(data_path, split)
             if not os.path.isdir(split_path):
                 continue
             f_train = open(os.path.join(output_path, split + '_datalist'), 'w')

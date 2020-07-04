@@ -26,7 +26,7 @@ We propose to search block counts and block widths by designing a densely connec
     `python dataset/img2lmdb.py --image_path 'the path of your ImageNet data' --list_path 'the path of your image list generated above' --output_path 'the path to output the lmdb file' --split 'split folder (train/val)'`
 
 2. Build the latency lookup table (lut) of the search space using the following script or directly use the ones provided in `./latency_list/`.<br>
-`python -m run_apis.latency_measure`
+`python -m run_apis.latency_measure --save 'output path' --input_size 'the input image size' --meas_times 'the times of op measurement' --list_name 'the name of the output lut' --device 'gpu or cpu' --config 'the path of the yaml config'`
 
 3. Search for the architectures. (We perform the search process on 4 32G V100 GPUs.)<br>
 For MobileNetV2 search:<br>
